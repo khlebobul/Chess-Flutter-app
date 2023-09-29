@@ -3,6 +3,7 @@ import 'package:chess_app/components/square.dart';
 import 'package:chess_app/values/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:chess_app/helper/helper_methods.dart';
+import 'package:chess_app/components/square.dart';
 
 class GameBoard extends StatefulWidget {
   const GameBoard({super.key});
@@ -13,6 +14,13 @@ class GameBoard extends StatefulWidget {
 
 class _GameBoardState extends State<GameBoard> {
   late List<List<ChessPiece?>> board;
+
+  ChessPiece? selectedPiece;
+
+  // The row index of the selected piece
+  // Default value -1 indicated no piece is currently selected
+  int selectedRow = -1;
+  int selectedCol = -1;
 
   @override
   void initState() {
@@ -132,6 +140,19 @@ class _GameBoardState extends State<GameBoard> {
     board = newBoard;
   }
 
+  // USER Selected a piece
+  void pieceSelected(int row, int col) {
+    setState(() {
+      // selected a piece if there is a piece of this square
+
+      if (board[row][col] != null) {
+        selectedPiece = board[row][col];
+        selectedRow = row;
+        selectedCol = col;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -146,9 +167,13 @@ class _GameBoardState extends State<GameBoard> {
 
           int row = index ~/ 8;
           int col = index % 8;
+
+          bool isSelected = selectedRow == row && selectedCol == col;
           return Square(
             isWhite: isWhite(index),
             piece: board[row][col],
+            isSelected: isSelected,
+            onTap: () => pieceSelected(row, col),
           );
         },
       ),
