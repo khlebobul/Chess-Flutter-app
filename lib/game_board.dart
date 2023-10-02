@@ -39,6 +39,13 @@ class _GameBoardState extends State<GameBoard> {
     List<List<ChessPiece?>> newBoard =
         List.generate(8, (index) => List.generate(8, (index) => null));
 
+    // place rendom piece in middle to test
+
+    newBoard[3][3] = ChessPiece(
+        type: ChessPieceType.pawn,
+        isWhite: false,
+        imagePath: 'lib/images/rook.png');
+
     // Place pawn
     for (int i = 0; i < 8; i++) {
       newBoard[1][i] = ChessPiece(
@@ -271,7 +278,7 @@ class _GameBoardState extends State<GameBoard> {
         ];
 
         for (var direction in directions) {
-          var i = 0;
+          var i = 1;
           while (true) {
             var newRow = row + i * direction[0];
             var newCol = col + i * direction[1];
