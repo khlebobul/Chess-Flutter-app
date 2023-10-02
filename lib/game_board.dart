@@ -39,13 +39,6 @@ class _GameBoardState extends State<GameBoard> {
     List<List<ChessPiece?>> newBoard =
         List.generate(8, (index) => List.generate(8, (index) => null));
 
-    // place rendom piece in middle to test
-
-    newBoard[3][3] = ChessPiece(
-        type: ChessPieceType.pawn,
-        isWhite: false,
-        imagePath: 'lib/images/rook.png');
-
     // Place pawn
     for (int i = 0; i < 8; i++) {
       newBoard[1][i] = ChessPiece(
@@ -162,6 +155,13 @@ class _GameBoardState extends State<GameBoard> {
         selectedCol = col;
       }
 
+      // if there a  piece selected and user taps on a square that is a valid move, move there
+
+      else if (selectedPiece != null &&
+          validMoves.any((element) => element[0] == row && element[1] == col)) {
+        movePiece(row, col);
+      }
+
       // if a piece is selected, calculate it's valid moves
       validMoves =
           calculateRowValidMoves(selectedRow, selectedCol, selectedPiece);
@@ -173,8 +173,12 @@ class _GameBoardState extends State<GameBoard> {
   List<List<int>> calculateRowValidMoves(int row, int col, ChessPiece? piece) {
     List<List<int>> candidateMoves = [];
 
+    if (piece == null) {
+      return [];
+    }
+
     // diferent directions based on the color
-    int direction = piece!.isWhite ? -1 : 1;
+    int direction = piece.isWhite ? -1 : 1;
 
     switch (piece.type) {
       case ChessPieceType.pawn:
@@ -366,6 +370,24 @@ class _GameBoardState extends State<GameBoard> {
     }
 
     return candidateMoves;
+  }
+
+  // MOVE Piece
+
+  void movePiece(int newRow, int newCol) {
+    // move the piece and clear the old spot
+
+    board[newRow][newCol] = selectedPiece;
+    board[selectedRow][selectedCol] = null;
+
+    // clear the selection
+
+    setState(() {
+      selectedPiece = null;
+      selectedRow = -1;
+      selectedCol = -1;
+      validMoves = [];
+    });
   }
 
   @override
