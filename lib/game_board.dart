@@ -147,14 +147,21 @@ class _GameBoardState extends State<GameBoard> {
   // USER Selected a piece
   void pieceSelected(int row, int col) {
     setState(() {
-      // selected a piece if there is a piece of this square
+      // No piece has been selected yet, this is the first selection
 
-      if (board[row][col] != null) {
+      if (selectedPiece == null && board[row][col] != null) {
         selectedPiece = board[row][col];
         selectedRow = row;
         selectedCol = col;
       }
 
+      // There is a piece selected? but the user can select another one of their pieces
+      else if (board[row][col] != null &&
+          board[row][col]!.isWhite == selectedPiece!.isWhite) {
+        selectedPiece = board[row][col];
+        selectedRow = row;
+        selectedCol = col;
+      }
       // if there a  piece selected and user taps on a square that is a valid move, move there
 
       else if (selectedPiece != null &&
