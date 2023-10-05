@@ -465,6 +465,20 @@ class _GameBoardState extends State<GameBoard> {
       selectedCol = -1;
       validMoves = [];
     });
+
+    if (isCheckMate(!isWhiteTurn)) {
+      showDialog(
+          context: context,
+          builder: ((context) => AlertDialog(
+                title: const Text("Check Mate!"),
+                actions: [
+                  TextButton(
+                    onPressed: resetGame,
+                    child: const Text("Play again"),
+                  )
+                ],
+              )));
+    }
     // change  turn
 
     isWhiteTurn = !isWhiteTurn;
@@ -474,7 +488,7 @@ class _GameBoardState extends State<GameBoard> {
 
   bool simulateMovesIsSafe(
       ChessPiece piece, int startRow, int startCol, int endRow, int endCol) {
-    // safe the current coard state
+    // safe the current board state
 
     ChessPiece? originalDestinationPiece = board[endRow][endCol];
 
@@ -541,6 +555,43 @@ class _GameBoardState extends State<GameBoard> {
       }
     }
     return false;
+  }
+
+  // is it checkmate?
+
+  bool isCheckMate(bool isWhiteKing) {
+    if (!isKingInCheck(isWhiteKing)) {
+      return false;
+    }
+
+    for (int i = 0; i < 8; i++) {
+      for (int j = 0; j < 8; j++) {
+        if (board[i][j] == null || board[i][j]!.isWhite != isWhiteKing) {
+          continue;
+        }
+        List<List<int>> pieceValidMoves =
+            calculateRealValidMoves(i, j, board[i][j], true);
+
+        if (pieceValidMoves.isNotEmpty) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  //  Reset game
+  void resetGame() {
+    Navigator.pop(context);
+    _initializeBoard();
+    checkStatus = false;
+    whitePiecesTaken.clear();
+    blackPiecesTaken.clear();
+    whiteKingPosition = [7, 4];
+    blackKingPosition = [0, 4];
+    isWhiteTurn = true;
+    setState(() {});
   }
 
   @override
