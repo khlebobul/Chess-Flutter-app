@@ -3,6 +3,7 @@ import 'package:chess_app/components/square.dart';
 import 'package:chess_app/values/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:chess_app/helper/helper_methods.dart';
+import 'package:chess_app/components/dead_piece.dart';
 
 class GameBoard extends StatefulWidget {
   const GameBoard({super.key});
@@ -25,6 +26,12 @@ class _GameBoardState extends State<GameBoard> {
   // each,ove is represented as a list with 2 elements: row and col
 
   List<List<int>> validMoves = [];
+
+  // A list of black pieces that have been taken by the black player
+  List<ChessPiece> whitePiecesTaken = [];
+
+  // A list of white pieces that have been taken by the black player
+  List<ChessPiece> blackPiecesTaken = [];
 
   @override
   void initState() {
@@ -382,6 +389,17 @@ class _GameBoardState extends State<GameBoard> {
   // MOVE Piece
 
   void movePiece(int newRow, int newCol) {
+    // if the new spot has an emeny piece
+    if (board[newRow][newCol] != null) {
+      // add the captured piece to the appropriate list
+      var capturedPiece = board[newRow][newCol];
+      if (capturedPiece!.isWhite) {
+        whitePiecesTaken.add(capturedPiece);
+      } else {
+        blackPiecesTaken.add(capturedPiece);
+      }
+    }
+
     // move the piece and clear the old spot
 
     board[newRow][newCol] = selectedPiece;
@@ -401,37 +419,72 @@ class _GameBoardState extends State<GameBoard> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: GridView.builder(
-        itemCount: 8 * 8,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate:
-            const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 8),
-        itemBuilder: (context, index) {
-          // get the row and the col position of this square
+      body: Column(
+        children: [
+          // White pieces taken
+          Expanded(
+            child: GridView.builder(
+              itemCount: whitePiecesTaken.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 8),
+              itemBuilder: (context, index) => DeadPiece(
+                imagePath: whitePiecesTaken[index].imagePath,
+                isWhite: true,
+              ),
+            ),
+          ),
 
-          int row = index ~/ 8;
-          int col = index % 8;
+          // Chess board
+          Expanded(
+            flex: 3,
+            child: GridView.builder(
+              itemCount: 8 * 8,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 8),
+              itemBuilder: (context, index) {
+                // get the row and the col position of this square
 
-          // check if the square is a valid move
+                int row = index ~/ 8;
+                int col = index % 8;
 
-          bool isValidMove = false;
-          for (var position in validMoves) {
-            // compare row and col
+                // check if the square is a valid move
 
-            if (position[0] == row && position[1] == col) {
-              isValidMove = true;
-            }
-          }
+                bool isValidMove = false;
+                for (var position in validMoves) {
+                  // compare row and col
 
-          bool isSelected = selectedRow == row && selectedCol == col;
-          return Square(
-            isWhite: isWhite(index),
-            piece: board[row][col],
-            isSelected: isSelected,
-            onTap: () => pieceSelected(row, col),
-            isValidMove: isValidMove,
-          );
-        },
+                  if (position[0] == row && position[1] == col) {
+                    isValidMove = true;
+                  }
+                }
+
+                bool isSelected = selectedRow == row && selectedCol == col;
+                return Square(
+                  isWhite: isWhite(index),
+                  piece: board[row][col],
+                  isSelected: isSelected,
+                  onTap: () => pieceSelected(row, col),
+                  isValidMove: isValidMove,
+                );
+              },
+            ),
+          ),
+
+          // Black pieces taken
+
+          Expanded(
+            child: GridView.builder(
+              itemCount: blackPiecesTaken.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 8),
+              itemBuilder: (context, index) => DeadPiece(
+                imagePath: blackPiecesTaken[index].imagePath,
+                isWhite: false,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
