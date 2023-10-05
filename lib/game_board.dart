@@ -36,6 +36,12 @@ class _GameBoardState extends State<GameBoard> {
   // A boolean to indicate whos turn it is
   bool isWhiteTurn = true;
 
+  // initial position of kings (keep track of this to make it easier late to see if king is in checkmate)
+
+  List<int> whiteKingPosition = [7, 4];
+  List<int> blackKingPosition = [0, 4];
+  bool checkStatus = false;
+
   @override
   void initState() {
     super.initState();
@@ -217,12 +223,12 @@ class _GameBoardState extends State<GameBoard> {
         // Pawn can capture diagoanly
         if (isInBoard(row + direction, col - 1) &&
             board[row + direction][col - 1] != null &&
-            board[row + direction][col - 1]!.isWhite) {
+            board[row + direction][col - 1]!.isWhite != piece.isWhite) {
           candidateMoves.add([row + direction, col - 1]);
         }
         if (isInBoard(row + direction, col + 1) &&
             board[row + direction][col + 1] != null &&
-            board[row + direction][col + 1]!.isWhite) {
+            board[row + direction][col + 1]!.isWhite != piece.isWhite) {
           candidateMoves.add([row + direction, col + 1]);
         }
 
@@ -410,6 +416,13 @@ class _GameBoardState extends State<GameBoard> {
     board[newRow][newCol] = selectedPiece;
     board[selectedRow][selectedCol] = null;
 
+    // see if any kings are under attack
+    if (isKingInCheck(!isWhiteTurn)) {
+      checkStatus = true;
+    } else {
+      checkStatus = false;
+    }
+
     // clear the selection
 
     setState(() {
@@ -418,10 +431,36 @@ class _GameBoardState extends State<GameBoard> {
       selectedCol = -1;
       validMoves = [];
     });
+    // change  turn
+
     isWhiteTurn = !isWhiteTurn;
   }
 
-  // change  turn
+  bool isKingInCheck(bool isWhiteKing) {
+    // getting the position of the king
+    List<int> kingPosition =
+        isWhiteKing ? whiteKingPosition : blackKingPosition;
+
+    // check if any enemy piece can attack the king
+    for (int i = 0; i < 8; i++) {
+      for (int j = 0; j < 8; j++) {
+        // skip empty squares and pieces of the same color as the king
+        if (board[i][j] == null || board[i][j]!.isWhite == isWhiteKing) {
+          continue;
+        }
+
+        List<List<int>> pieceValidMoves =
+            calculateRowValidMoves(i, j, board[i][j]);
+
+        // check if the King's position is in this piece's valid moves
+        if (pieceValidMoves.any((move) =>
+            move[0] == kingPosition[0] && move[1] == kingPosition[1])) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -442,7 +481,9 @@ class _GameBoardState extends State<GameBoard> {
               ),
             ),
           ),
+          // Game Status
 
+          Text(checkStatus ? "CHECK!" : ""),
           // Chess board
           Expanded(
             flex: 3,
