@@ -411,6 +411,17 @@ class _GameBoardState extends State<GameBoard> {
       }
     }
 
+    // check if the piece being moved in a king
+
+    if (selectedPiece!.type == ChessPieceType.king) {
+      // update the appropriate king pos
+      if (selectedPiece!.isWhite) {
+        whiteKingPosition = [newRow, newCol];
+      } else {
+        blackKingPosition = [newRow, newCol];
+      }
+    }
+
     // move the piece and clear the old spot
 
     board[newRow][newCol] = selectedPiece;
