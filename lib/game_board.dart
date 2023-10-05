@@ -33,6 +33,9 @@ class _GameBoardState extends State<GameBoard> {
   // A list of white pieces that have been taken by the black player
   List<ChessPiece> blackPiecesTaken = [];
 
+  // A boolean to indicate whos turn it is
+  bool isWhiteTurn = true;
+
   @override
   void initState() {
     super.initState();
@@ -157,9 +160,11 @@ class _GameBoardState extends State<GameBoard> {
       // No piece has been selected yet, this is the first selection
 
       if (selectedPiece == null && board[row][col] != null) {
-        selectedPiece = board[row][col];
-        selectedRow = row;
-        selectedCol = col;
+        if (board[row][col]!.isWhite == isWhiteTurn) {
+          selectedPiece = board[row][col];
+          selectedCol = col;
+          selectedRow = row;
+        }
       }
 
       // There is a piece selected? but the user can select another one of their pieces
@@ -413,7 +418,10 @@ class _GameBoardState extends State<GameBoard> {
       selectedCol = -1;
       validMoves = [];
     });
+    isWhiteTurn = !isWhiteTurn;
   }
+
+  // change  turn
 
   @override
   Widget build(BuildContext context) {
@@ -425,6 +433,7 @@ class _GameBoardState extends State<GameBoard> {
           Expanded(
             child: GridView.builder(
               itemCount: whitePiecesTaken.length,
+              physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 8),
               itemBuilder: (context, index) => DeadPiece(
@@ -476,6 +485,7 @@ class _GameBoardState extends State<GameBoard> {
           Expanded(
             child: GridView.builder(
               itemCount: blackPiecesTaken.length,
+              physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 8),
               itemBuilder: (context, index) => DeadPiece(
